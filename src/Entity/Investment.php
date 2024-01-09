@@ -3,10 +3,12 @@
 namespace App\Entity;
 
 use App\Repository\InvestmentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InvestmentRepository::class)]
-class Investment
+class Investment implements \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -23,11 +25,15 @@ class Investment
     #[ORM\Column]
     private float $value;
 
-    #[ORM\ManyToOne(inversedBy: 'investment')]
-    private ?Movement $movement = null;
-
+    #[ORM\OneToMany(mappedBy: 'investment', targetEntity: Movement::class, cascade: ["persist"])]
+    private Collection $movements;
+    
+    #[ORM\Column]
+    private float $earnings = 0.0;
+    
     public function __construct() 
     {
+        $this->movements = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -72,15 +78,48 @@ class Investment
         return $this;
     }
 
-    public function getMovement(): ?Movement
+    public function getMovements(): Collection
     {
-        return $this->movement;
+        return $this->movements;
     }
 
-    public function setMovement(?Movement $movement): static
+    public function getBalance(): float
     {
-        $this->movement = $movement;
+        $amount = $this->value;        
+        $balance = $this->getMovements()->reduce(fn(float $carry, Movement $movement) => $carry += $movement->getValue(), 0);
+
+        return $amount + $balance;
+    }
+
+    public function addMovement(Movement $movement): static
+    {
+        if (!$this->movements->contains($movement)) {
+            $this->movements->add($movement);
+            $movement->setInvestment($this);
+        }
 
         return $this;
+    }   
+    
+    public function getEarnings(): float
+    {
+        return $this->earnings;
+    }
+
+    public function setEarnings(float $earnings): static
+    {
+        $this->earnings = $earnings;
+
+        return $this;
+    }
+    
+    public function jsonSerialize(): mixed
+    {
+        return[
+            'id' => $this->getId(),
+            'createdAt' => $this->getCreatedAt(),
+            'value' => $this->getValue(),
+            'owner' => $this->getOwner()
+        ];         
     }
 }

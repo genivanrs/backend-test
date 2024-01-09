@@ -21,6 +21,12 @@ class InvestmentRepository extends ServiceEntityRepository
         parent::__construct($registry, Investment::class);
     }
 
+    public function save(Investment $investment): void
+    {
+        $this->_em->persist($investment);
+        $this->_em->flush();
+    }
+
 //    /**
 //     * @return Investment[] Returns an array of Investment objects
 //     */
