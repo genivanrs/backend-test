@@ -1,88 +1,129 @@
 # Back End Test Project <img src="https://mediacdn.simonetti.com.br/media/logo/websites/1/header-logo-340_1.png" align="right" height="50px" />
 
-You should see this challenge as an opportunity to create an application following modern development best practices (given the stack of your choice), but also feel free to use your own architecture preferences (coding standards, code organization, third-party libraries, etc). It’s perfectly fine to use vanilla code or any framework or libraries.
+## Acesse a documentação da API em http://localhost:8000/api/doc.
+http://http://localhost:8080/docs/documentation.html
 
-## Scope
+# Controle de Investimento API
 
-In this challenge you should build an API for an application that stores and manages investments, it should have the following features:
+Bem-vindo à documentação da API Controle de Investimento. Esta API é projetada para fornecer funcionalidades relacionadas ao controle de investimentos.
 
-1. __Creation__ of an investment with an owner, a creation date and an amount.
-    1. The creation date of an investment can be today or a date in the past.
-    2. An investment should not be or become negative.
-2. __View__ of an investment with its initial amount and expected balance.
-    1. Expected balance should be the sum of the invested amount and the [gains][].
-    2. If an investment was already withdrawn then the balance must reflect the gains of that investment
-3. __Withdrawal__ of a investment.
-    1. The withdraw will always be the sum of the initial amount and its gains,
-       partial withdrawn is not supported.
-    2. Withdrawals can happen in the past or today, but can't happen before the investment creation or the future.
-    3. [Taxes][taxes] need to be applied to the withdrawals before showing the final value.
-4. __List__ of a person's investments
-    1. This list should have pagination.
+## Instruções de Uso
 
-__NOTE:__ the implementation of an interface will not be evaluated.
+### 1. Instalação
 
-### Gain Calculation
+## Certifique-se de ter o [Composer](https://getcomposer.org/) instalado. Em seguida, execute o seguinte comando para instalar as dependências do projeto:
 
-The investment will pay 0.52% every month in the same day of the investment creation.
+composer install
 
-Given that the gain is paid every month, it should be treated as [compound gain][], which means that every new period (month) the amount gained will become part of the investment balance for the next payment.
+## Instale o Symfony Skeleton
+composer create-project symfony/skeleton api_investment_genivan
 
-### Taxation
+# Instale o componente Doctrine para manipulação de banco de dados:
+composer require symfony/orm-pack
 
-When money is withdrawn, tax is triggered. Taxes apply only to the profit/gain portion of the money withdrawn. For example, if the initial investment was 1000.00, the current balance is 1200.00, then the taxes will be applied to the 200.00.
+#Instale o componente maker-bundle:
+composer require symfony/maker-bundle –dev
 
-The tax percentage changes according to the age of the investment:
-* If it is less than one year old, the percentage will be 22.5% (tax = 45.00).
-* If it is between one and two years old, the percentage will be 18.5% (tax = 37.00).
-* If older than two years, the percentage will be 15% (tax = 30.00).
+# Crie uma entidade Investment:
+bin/console make:entity Investment
+bin/console make:entity 
 
-## Requirements
-1. Create project using any stack of your preference, but with PHP as its main language. It’s perfectly OK to use vanilla code or any framework or libraries;
-3. Although you can use as many dependencies as you want, you should manage them wisely;
-4. It is not necessary to send the notification emails, however, the code required for that would be welcome;
-5. The API must be documented in some way.
+# Siga as instruções para criar a entidade, adicionando os campos necessários como owner, creationDate, value, withdrawn, e gains.
+#Apos a criação da entidade rode os seguinets comandos para verificar as tabelas necesarias e depois para crialas:
+bin/console doctrine:migrations:diff
+bin/console doctrine:migrations:migrate
 
-## Deliverables
-The project source code and dependencies should be made available in GitHub. Here are the steps you should follow:
-1. Fork this repository to your GitHub account (create an account if you don't have one, you will need it working with us).
-2. Create a "development" branch and commit the code to it. Do not push the code to the main branch.
-3. Include a README file that describes:
-    - Special build instructions, if any
-    - List of third-party libraries used and short description of why/how they were used
-    - A link to the API documentation.
-4. Once the work is complete, create a pull request from "development" into "main" and send us the link.
-5. Avoid using huge commits hiding your progress. Feel free to work on a branch and use `git rebase` to adjust your commits before submitting the final version.
+# Crie um controlador para gerenciar os investimentos:
+bin/console make:controller InvestmentController
+#Implemente as ações necessárias neste controlador, como createInvestment, viewInvestment, withdrawInvestment, e listInvestments.
 
-## Coding Standards
-When working on the project be as clean and consistent as possible.
+### Estrutura da API
+/your-project
+│
+├── bin/
+│   └── console
+│
+├── config/
+│   ├── packages/
+│   │   └── ... (Configurações do pacote)
+│   ├── routes/
+│   │   └── ... (Definição de rotas)
+│   └── ... (Outras configurações)
+│
+├── public/
+│   ├── index.php
+│   └── ... (Recursos públicos, como imagens)
+│
+├── src/
+│   ├── Controller/
+│   │   └── ... (Controladores da API)
+│   ├── Entity/
+│   │   └── ... (Entidades Doctrine)
+│   ├── Repository/
+│   │   └── ... (Repositórios Doctrine)
+│   └── ... (Outras classes PHP)
+│
+├── templates/
+│   └── ... (Templates Twig, opcional)
+│
+├── tests/
+│   └── ... (Testes PHPUnit)
+│
+├── translations/
+│   └── ... (Arquivos de tradução, opcional)
+│
+├── var/
+│   └── ... (Cache, logs, sessions, etc.)
+│
+├── vendor/
+│   └── ... (Dependências do Composer)
+│
+├── .env
+├── .env.dist
+├── .gitignore
+├── composer.json
+├── phpunit.xml.dist
+├── symfony.lock
+└── ... (Outros arquivos de configuração)
 
-## Project Deadline
-Ideally you'd finish the test project in 5 days. It shouldn't take you longer than a entire week.
+### Execução do Servidor
+php bin/console server:start
 
-## Quality Assurance
-Use the following checklist to ensure high quality of the project.
+### Endpoints Principais
+POST /api/investment: Cria um novo investimento.
+GET /api/investments/listInvestments: Lista investimentos paginados.
+GET /api/investment/{investmentId}: Visualiza detalhes de um investimento.
+PUT /api/investment/{investmentId}/withdraw: Realiza saque de um investimento.
 
-### General
-- First of all, the application should run without errors.
-- Are all requirements set above met?
-- Is coding style consistent?
-- The API is well documented?
-- The API has unit tests?
+### Documentação
+. Symfony Framework
+. Doctrine ORM
+. OpenAPI para geração de documentação API.
 
-## Submission
-1. A link to the Github repository.
-2. Briefly describe how you decided on the tools that you used.
+### Dos Testes Via Insomnia
+## Passo 1: Adicionar um Novo Request
+Abra o Insomnia.
+No menu lateral esquerdo, clique em "+", e selecione "Request".
+Dê um nome ao seu request e escolha o método HTTP apropriado (GET, POST, PUT, etc.).
 
-## Have Fun Coding 🤘
-- This challenge description is intentionally vague in some aspects, but if you need assistance feel free to ask for help.
-- If any of the seems out of your current level, you may skip it, but remember to tell us about it in the pull request.
+## Passo 2: Configurar os Detalhes do Request
+Insira a URL do endpoint que você deseja testar. Por exemplo, http://localhost:8080/api/investment.
+Selecione a guia "Body" para adicionar dados de requisição, caso necessário.
+Selecione a guia "Headers" para adicionar cabeçalhos, como "Content-Type" se estiver enviando dados JSON.
 
-## Credits
+## Passo 3: Executar o Request
+Clique no botão "Send" para executar o request.
+Observe a resposta na guia "Response". Certifique-se de que a resposta está de acordo com o esperado.
 
-This coding challenge was inspired on [kinvoapp/kinvo-back-end-test](https://github.com/kinvoapp/kinvo-back-end-test/blob/2f17d713de739e309d17a1a74a82c3fd0e66d128/README.md)
-
-[gains]: #gain-calculation
-[taxes]: #taxation
-[interest]: #interest-calculation
-[compound gain]: https://www.investopedia.com/terms/g/gain.asp
+### Exemplos de REquest
+Método: POST
+URL: http://localhost:8080/api/investment
+Headers: Adicione um header Content-Type: application/json
+Body: Adicione os dados do investimento em formato JSON.
+Exemplo:
+    {
+        "name": "Nome do Investimento",
+        "value": 1000,
+        "created_at": "2022-01-09T12:00:00Z"
+    }
+Clique em "Send" para executar o request.
